@@ -1,7 +1,6 @@
 package com.dbsthd2459.datingapp.slider
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.auth.UserDataModel
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 
@@ -43,9 +41,7 @@ class CardStackAdapter(val context : Context, val items : List<UserDataModel>) :
 
             val storageRef = Firebase.storage.reference.child(data.uid + ".png")
 
-            Log.d("T", data.uid + ".png")
-
-            storageRef.downloadUrl.addOnCompleteListener(OnCompleteListener { task ->
+            storageRef.downloadUrl.addOnCompleteListener({ task ->
                 if (task.isSuccessful) {
                     Glide.with(context)
                         .load(task.result)

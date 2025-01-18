@@ -1,5 +1,6 @@
 package com.dbsthd2459.datingapp
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -14,7 +15,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
 import com.google.firebase.ktx.Firebase
 import com.yuyakaido.android.cardstackview.CardStackLayoutManager
 import com.yuyakaido.android.cardstackview.CardStackListener
@@ -83,13 +83,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun getUserDataList() {
         val postListener = object : ValueEventListener {
+            @SuppressLint("NotifyDataSetChanged")
             override fun onDataChange(dataSnapshot: DataSnapshot) {
 
                 for (dataModel in dataSnapshot.children) {
 
-                    //val user = dataSnapshot.getValue(UserDataModel::class.java)
-                    //userDataList.add(user!!)
-                    Log.d(TAG, dataSnapshot.getValue())
+                    val user = dataModel.getValue(UserDataModel::class.java)
+                    userDataList.add(user!!)
 
                 }
 
