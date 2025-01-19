@@ -1,13 +1,22 @@
 package com.dbsthd2459.datingapp
 
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import com.dbsthd2459.datingapp.auth.UserDataModel
 import com.dbsthd2459.datingapp.setting.SettingActivity
 import com.dbsthd2459.datingapp.slider.CardStackAdapter
@@ -27,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 
     private val TAG = "MainActivity"
 
-    private val userDataList = mutableListOf<UserDataModel>()
+    private val usersDataList = mutableListOf<UserDataModel>()
 
     private var userCount = 0
 
@@ -57,7 +66,7 @@ class MainActivity : AppCompatActivity() {
             override fun onCardSwiped(direction: Direction?) {
 
                 if (direction == Direction.Right) {
-
+                    userLikeOtherUser(uid, usersDataList[userCount].uid.toString())
                 }
 
                 if (direction == Direction.Left) {
@@ -66,7 +75,7 @@ class MainActivity : AppCompatActivity() {
 
                 userCount = userCount + 1
 
-                if (userCount == userDataList.count()) {
+                if (userCount == usersDataList.count()) {
                     getUserDataList(currentUserGender)
                     Toast.makeText(this@MainActivity, "유저 정보를 새로 받아옵니다", Toast.LENGTH_SHORT).show()
                 }
@@ -90,7 +99,7 @@ class MainActivity : AppCompatActivity() {
 
         })
 
-        cardStackAdapter = CardStackAdapter(baseContext, userDataList)
+        cardStackAdapter = CardStackAdapter(baseContext, usersDataList)
         cardStackView.layoutManager = manager
         cardStackView.adapter = cardStackAdapter
 
@@ -126,11 +135,11 @@ class MainActivity : AppCompatActivity() {
 
                     val user = dataModel.getValue(UserDataModel::class.java)
 
-                    if (user!!.gender.toString().equals(currentUserGender)) {
+                    if (user!!.gender.toString() == currentUserGender) {
 
                     } else {
 
-                        if (!uid.equals(user.uid)) userDataList.add(user)
+                        if (uid != user.uid) usersDataList.add(user)
 
                     }
 
@@ -145,5 +154,107 @@ class MainActivity : AppCompatActivity() {
             }
         }
         FirebaseRef.userInfoRef.addValueEventListener(postListener)
+    }
+
+    private fun userLikeOtherUser(myUid: String, otherUid: String) {
+
+        FirebaseRef.userLikeRef.child(myUid).child(otherUid).setValue("true")
+
+        getOtherUserLikeList(otherUid)
+
+    }
+
+    // 내가 좋아요 한 사람의 좋아요 리스트 확인
+    private fun getOtherUserLikeList(otherUid: String) {
+
+        val postListener = object : ValueEventListener {
+            @SuppressLint("NotifyDataSetChanged")
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+
+                for (dataModel in dataSnapshot.children) {
+
+                    val likeUserKey = dataModel.key.toString()
+                    if (likeUserKey == uid) {
+                        Toast.makeText(this@MainActivity, "매칭 성공쓰!", Toast.LENGTH_SHORT).show()
+                        createNotificationChannel()
+                        sendNotification()
+                    }
+
+                }
+
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Getting Post failed, log a message
+                Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
+            }
+        }
+        FirebaseRef.userLikeRef.child(otherUid).addValueEventListener(postListener)
+
+    }
+
+    // Notification
+
+    @SuppressLint("ObsoleteSdkInt")
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is not in the Support Library.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "name"
+            val descriptionText = "description"
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel("Test_Channel", name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system.
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun sendNotification() {
+        var builder = NotificationCompat.Builder(this, "Test_Channel")
+            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setContentTitle("매칭완료")
+            .setContentText("매칭이 완료되었습니다. 저 사람도 나를 좋아해요!")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        with(NotificationManagerCompat.from(this)) {
+            if (ActivityCompat.checkSelfPermission(
+                    this@MainActivity,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                ActivityCompat.requestPermissions(
+                    this@MainActivity,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    NOTIFICATION_PERMISSION_REQUEST_CODE
+                )
+
+                return@with
+            }
+            notify(123, builder.build())
+        }
+    }
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_REQUEST_CODE = 1
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                sendNotification()
+            } else {
+                Toast.makeText(this, "매칭 메시지를 위해 알림 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }

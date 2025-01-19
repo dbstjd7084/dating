@@ -15,6 +15,12 @@
         android:text="myPage" />
 
     <Button
+        android:id="@+id/myLikeList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MY Matching List" />
+
+    <Button
         android:id="@+id/logoutBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
