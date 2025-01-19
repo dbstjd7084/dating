@@ -5,10 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.auth.UserDataModel
@@ -28,13 +25,9 @@ class MyPageActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_my_page)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+
+        getMyData()
     }
 
     private fun getMyData() {
@@ -54,10 +47,10 @@ class MyPageActivity : AppCompatActivity() {
                 val data = dataSnapshot.getValue(UserDataModel::class.java)
 
                 myUid.text = data!!.uid
-                myNickname.text = data!!.nickname
-                myAge.text = data!!.age
-                myCity.text = data!!.city
-                myGender.text = data!!.gender
+                myNickname.text = data.nickname
+                myAge.text = data.age
+                myCity.text = data.city
+                myGender.text = data.gender
 
                 val storageRef = Firebase.storage.reference.child(data.uid + ".png")
 
