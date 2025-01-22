@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DatingApp"
         tools:targetApi="31">
+<<<<<<< HEAD
         <activity
             android:name=".message.MyMsgActivity"
             android:exported="false" />
@@ -27,6 +28,8 @@
             </intent-filter>
         </service>
 
+=======
+>>>>>>> f3ebd03303149dddbced767c836ce3ea5908518d
         <activity
             android:name=".message.MyLikeListActivity"
             android:exported="false" />
