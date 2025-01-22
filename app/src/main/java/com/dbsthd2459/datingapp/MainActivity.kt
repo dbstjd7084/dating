@@ -1,27 +1,30 @@
 package com.dbsthd2459.datingapp
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.Manifest
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.dbsthd2459.datingapp.auth.UserDataModel
 import com.dbsthd2459.datingapp.setting.SettingActivity
 import com.dbsthd2459.datingapp.slider.CardStackAdapter
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebaseRef
+import com.dbsthd2459.datingapp.utils.MyInfo
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -44,6 +47,22 @@ class MainActivity : AppCompatActivity() {
 
     private val uid = FirebaseAuthUtils.getUid()
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            Toast.makeText(this, "Notifications permission granted", Toast.LENGTH_SHORT)
+                .show()
+        } else {
+            Toast.makeText(
+                this,
+                "FCM can't post notifications without POST_NOTIFICATIONS permission",
+                Toast.LENGTH_LONG,
+            ).show()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -105,6 +124,22 @@ class MainActivity : AppCompatActivity() {
 
         getMyUserData()
 
+        askNotificationPermission()
+
+    }
+
+    private fun askNotificationPermission() {
+        // This is only necessary for API Level > 33 (TIRAMISU)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+                PackageManager.PERMISSION_GRANTED
+            ) {
+                // FCM SDK (and your app) can post notifications.
+            } else {
+                // Directly ask for the permission
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     private fun getMyUserData() {
@@ -115,6 +150,8 @@ class MainActivity : AppCompatActivity() {
                 val data = dataSnapshot.getValue(UserDataModel::class.java)
 
                 currentUserGender = data?.gender.toString()
+
+                MyInfo.myNickname = data?.nickname.toString()
 
                 getUserDataList(currentUserGender)
             }
@@ -177,7 +214,7 @@ class MainActivity : AppCompatActivity() {
                     if (likeUserKey == uid) {
                         Toast.makeText(this@MainActivity, "매칭 성공쓰!", Toast.LENGTH_SHORT).show()
                         createNotificationChannel()
-                        sendNotification()
+                        sendMatchNotification()
                     }
 
                 }
@@ -214,27 +251,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     @SuppressLint("MissingPermission")
-    private fun sendNotification() {
+    private fun sendMatchNotification() {
         var builder = NotificationCompat.Builder(this, "Test_Channel")
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle("매칭완료")
             .setContentText("매칭이 완료되었습니다. 저 사람도 나를 좋아해요!")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         with(NotificationManagerCompat.from(this)) {
-            if (ActivityCompat.checkSelfPermission(
-                    this@MainActivity,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-
-                ActivityCompat.requestPermissions(
-                    this@MainActivity,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    NOTIFICATION_PERMISSION_REQUEST_CODE
-                )
-
-                return@with
-            }
             notify(123, builder.build())
         }
     }
@@ -251,9 +274,9 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                sendNotification()
+                Toast.makeText(this, "알림 설정에 동의하셨습니다.", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "매칭 메시지를 위해 알림 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "매칭을 위해 알림 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
             }
         }
     }

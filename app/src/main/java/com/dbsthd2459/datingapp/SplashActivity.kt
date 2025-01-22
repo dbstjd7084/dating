@@ -7,7 +7,6 @@ import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.dbsthd2459.datingapp.auth.IntroActivity
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
-import com.google.firebase.auth.FirebaseAuth
 
 class SplashActivity : AppCompatActivity() {
 
