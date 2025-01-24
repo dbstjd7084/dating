@@ -3,14 +3,11 @@ package com.dbsthd2459.datingapp
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import com.dbsthd2459.datingapp.auth.IntroActivity
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 
 class SplashActivity : AppCompatActivity() {
-
-    private val TAG = "SplashActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -18,8 +15,6 @@ class SplashActivity : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         val uid = FirebaseAuthUtils.getUid()
-
-        Log.d(TAG, uid)
 
         if (uid == "null") {
 

@@ -74,6 +74,8 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                app:counterMaxLength="10"
+                app:counterEnabled="true"
                 android:layout_margin="10dp"
                 style="@style/TextInputStyle"
                 android:theme="@style/TextInputStyle">

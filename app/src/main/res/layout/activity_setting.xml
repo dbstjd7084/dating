@@ -18,13 +18,7 @@
         android:id="@+id/myLikeList"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="MY Matching List" />
-
-    <Button
-        android:id="@+id/myMsg"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="내가 받은 메세지" />
+        android:text="Chatting" />
 
     <Button
         android:id="@+id/logoutBtn"

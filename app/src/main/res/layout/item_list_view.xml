@@ -4,8 +4,7 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/listViewItemNicknameArea"
-        android:text="닉네임 : "
+        android:text="대화 상대 :"
         android:textSize="20sp"
         android:layout_margin="20dp"
         android:layout_width="wrap_content"

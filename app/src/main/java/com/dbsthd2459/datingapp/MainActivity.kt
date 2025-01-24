@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -164,6 +165,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getUserDataList(currentUserGender : String) {
+        usersDataList.clear()
+
         val postListener = object : ValueEventListener {
             @SuppressLint("NotifyDataSetChanged")
             override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -212,7 +215,7 @@ class MainActivity : AppCompatActivity() {
 
                     val likeUserKey = dataModel.key.toString()
                     if (likeUserKey == uid) {
-                        Toast.makeText(this@MainActivity, "매칭 성공쓰!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this@MainActivity, "상대방이 나를 좋아요한 상대입니다!", Toast.LENGTH_SHORT).show()
                         createNotificationChannel()
                         sendMatchNotification()
                     }
@@ -252,6 +255,7 @@ class MainActivity : AppCompatActivity() {
 
     @SuppressLint("MissingPermission")
     private fun sendMatchNotification() {
+
         var builder = NotificationCompat.Builder(this, "Test_Channel")
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle("매칭완료")

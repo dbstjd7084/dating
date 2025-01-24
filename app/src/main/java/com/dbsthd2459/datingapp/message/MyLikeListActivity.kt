@@ -1,6 +1,7 @@
 package com.dbsthd2459.datingapp.message
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -14,19 +15,15 @@ import androidx.lifecycle.lifecycleScope
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.auth.UserDataModel
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
+import com.dbsthd2459.datingapp.utils.FirebasePushUtils.Companion.sendPush
 import com.dbsthd2459.datingapp.utils.FirebaseRef
+import com.dbsthd2459.datingapp.utils.LocalDateTimeUtils.Companion.toTimestamp
 import com.dbsthd2459.datingapp.utils.MyInfo
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
+import java.time.LocalDateTime
 
 class MyLikeListActivity : AppCompatActivity() {
 
@@ -62,70 +59,16 @@ class MyLikeListActivity : AppCompatActivity() {
 
         userListView.setOnItemLongClickListener { parent, view, position, id ->
 
-            Toast.makeText(this@MyLikeListActivity, "꾹 눌러서 보냈수ㄴㅇ", Toast.LENGTH_LONG).show()
+            Toast.makeText(this@MyLikeListActivity, "꾹 눌러서 보냈수", Toast.LENGTH_LONG).show()
 
             lifecycleScope.launch {
 
-                sendPush("알림 메시지", MyInfo.myNickname + " 님께서 푸시 알림을 보냈습니다!", likeUserList[position].token.toString())
+
+                sendPush("알림 메세지", MyInfo.myNickname + " 님께서 푸시 알림을 보냈습니다!", likeUserList[position].token.toString(), resources.openRawResource(R.raw.service_account))
 
             }
 
             return@setOnItemLongClickListener(true)
-        }
-
-    }
-
-    // PUSH 보내기
-    private suspend fun sendPush(title: String, content: String, token: String) {
-
-        val client = OkHttpClient()
-        val accessToken = FirebaseAuthUtils.getAccessToken(resources.openRawResource(R.raw.service_account))
-
-        if (accessToken == null) {
-            Log.e("FCM", "토큰 액세스에 실패했습니다.")
-            return
-        }
-
-        val notification = JSONObject().apply {
-            put("title", title)
-            put("body", content)
-        }
-
-        val data = JSONObject().apply {
-            put("messageKey", "messageValue")
-        }
-
-        val message = JSONObject().apply {
-            put("token", token)
-            put("notification", notification)
-            put("data", data)
-        }
-
-        val json = JSONObject().apply {
-            put("message", message)
-        }
-
-        val requestBody = json.toString().toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
-
-        val request = Request.Builder()
-            .url("https://fcm.googleapis.com/v1/projects/dating-f3ba7/messages:send")
-            .post(requestBody)
-            .addHeader("Authorization", "Bearer $accessToken")
-            .addHeader("Content-Type", "application/json")
-            .build()
-
-        // Coroutine을 사용하여 비동기 요청 처리
-        withContext(Dispatchers.IO) {
-            try {
-                val response = client.newCall(request).execute()
-                if (response.isSuccessful) {
-                    Log.d("FCM", "Notification sent: ${response.body?.string()}")
-                } else {
-                    Log.e("FCM", "Failed to send notification: ${response.code}")
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
         }
 
     }
@@ -142,11 +85,12 @@ class MyLikeListActivity : AppCompatActivity() {
 
                         val likeUserKey = dataModel.key.toString()
                         if (likeUserKey.equals(uid)) {
-                            Toast.makeText(this@MyLikeListActivity, "매칭이 되었습니다.", Toast.LENGTH_LONG).show()
 
-                            showDialog()
+                            val intent = Intent(this@MyLikeListActivity, ChatActivity::class.java)
+                            intent.putExtra("target", otherUid)
+                            startActivity(intent)
                         } else {
-                            Toast.makeText(this@MyLikeListActivity, "매칭이 되지 않았습니다.", Toast.LENGTH_LONG).show()
+                            Toast.makeText(this@MyLikeListActivity, "매칭이 되지 않아 채팅을 할 수 없습니다. 길게 눌러 푸시 알림을 보내보세요!", Toast.LENGTH_LONG).show()
                         }
 
                     }
@@ -211,7 +155,7 @@ class MyLikeListActivity : AppCompatActivity() {
 
     private fun showDialog() {
 
-        val mDialogView = LayoutInflater.from(this).inflate(R.layout.custom_dialog, null)
+        val mDialogView = LayoutInflater.from(this).inflate(0, null)
         val mBuilder = AlertDialog.Builder(this)
             .setView(mDialogView)
             .setTitle("메세지 보내기")
@@ -229,13 +173,13 @@ class MyLikeListActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val msgModel = MsgModel(MyInfo.myNickname, msgText)
+            val msgModel = MsgModel(MyInfo.myNickname, LocalDateTime.now().toTimestamp(), msgText)
 
-            FirebaseRef.userMsgRef.child(getterUid).push().setValue(msgModel)
+            FirebaseRef.userMsgRef.child(getterUid).child(uid).setValue(msgModel)
 
             lifecycleScope.launch {
 
-                sendPush(MyInfo.myNickname, msgText, getterToken)
+                sendPush(MyInfo.myNickname, msgText, getterToken, resources.openRawResource(R.raw.service_account))
 
             }
 

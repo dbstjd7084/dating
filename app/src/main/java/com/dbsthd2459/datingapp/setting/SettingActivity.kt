@@ -6,8 +6,8 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.auth.IntroActivity
+import com.dbsthd2459.datingapp.message.ChatActivity
 import com.dbsthd2459.datingapp.message.MyLikeListActivity
-import com.dbsthd2459.datingapp.message.MyMsgActivity
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -21,14 +21,6 @@ class SettingActivity : AppCompatActivity() {
         mybtn.setOnClickListener {
 
             val intent = Intent(this, MyPageActivity::class.java)
-            startActivity(intent)
-
-        }
-
-        val myMsg = findViewById<Button>(R.id.myMsg)
-        myMsg.setOnClickListener {
-
-            val intent = Intent(this, MyMsgActivity::class.java)
             startActivity(intent)
 
         }
