@@ -1,18 +1,19 @@
 package com.dbsthd2459.datingapp.message
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ListView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebasePushUtils.Companion.sendPush
@@ -27,11 +28,12 @@ class ChatActivity : AppCompatActivity() {
 
     private val TAG = "ChatActivity"
 
-    lateinit var listviewAdapter: MsgAdapter
+    lateinit var recyclerAdapter: MsgAdapter
     var msgList = mutableListOf<MsgModel>()
     lateinit var target: String
+    private lateinit var tNickname: String
 
-    private lateinit var listview: ListView
+    private lateinit var recyclerView: RecyclerView
 
     private val receiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -44,16 +46,23 @@ class ChatActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat)
 
-        listview = findViewById(R.id.msgListView)
-        listview.isStackFromBottom = true
+        recyclerView = findViewById(R.id.msgListView)
+        recyclerView.setHasFixedSize(true)
+
+        // LayoutManager 설정 (세로 스크롤 기본)
+        recyclerView.layoutManager = LinearLayoutManager(this).apply {
+            stackFromEnd = true // 메시지 리스트가 아래부터 표시
+        }
 
         target = intent.getStringExtra("target")!!
 
         FirebaseAuthUtils.getNickname(target) { nickname ->
 
+            tNickname = nickname
+
             val displayMetrics = resources.displayMetrics
-            listviewAdapter = MsgAdapter(this, msgList, nickname, displayMetrics.widthPixels)
-            listview.adapter = listviewAdapter
+            recyclerAdapter = MsgAdapter(this, msgList, nickname, displayMetrics.widthPixels)
+            recyclerView.adapter = recyclerAdapter
 
             getMyMsg()
 
@@ -97,6 +106,7 @@ class ChatActivity : AppCompatActivity() {
 
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun getMyMsg() {
 
         val sentMessages = mutableListOf<MsgModel>()
@@ -125,11 +135,9 @@ class ChatActivity : AppCompatActivity() {
                 msgList.clear()
                 msgList.addAll(sortedMessages)
 
-                listviewAdapter.notifyDataSetChanged()
+                recyclerAdapter.notifyDataSetChanged()
 
-                listview.post {
-                    listview.smoothScrollToPosition(listview.count - 1)
-                }
+                recyclerView.scrollToPosition(msgList.size - 1)
 
             }
         }

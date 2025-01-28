@@ -8,67 +8,60 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.LocalDateTimeUtils.Companion.toLocalDateTime
 import com.dbsthd2459.datingapp.utils.MyInfo
 import java.time.format.DateTimeFormatter
 
-class MsgAdapter(val context : Context, val items : MutableList<MsgModel>, val targetNickname: String, val maxWidth: Int) : BaseAdapter() {
+class MsgAdapter(val context : Context, val items : MutableList<MsgModel>, val targetNickname: String, val maxWidth: Int) : RecyclerView.Adapter<MsgAdapter.MsgViewHolder>() {
 
-    override fun getCount(): Int {
-        return items.size
+    inner class MsgViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val layout: LinearLayout = view.findViewById(R.id.msgLayout)
+        val nicknameArea: TextView = view.findViewById(R.id.msgNicknameArea)
+        val dateArea: TextView = view.findViewById(R.id.msgDateArea)
+        val contentArea: TextView = view.findViewById(R.id.msgContentArea)
     }
 
-    override fun getItem(position: Int): Any {
-        return items[position]
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MsgViewHolder {
+        val view = LayoutInflater.from(context).inflate(R.layout.item_message_view, parent, false)
+        return MsgViewHolder(view)
     }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
-
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-
-        var cView = convertView
-        if (cView == null) {
-
-            cView = LayoutInflater.from(parent?.context).inflate(R.layout.item_message_view, parent, false)
-
-        }
-
-        val layout = cView!!.findViewById<LinearLayout>(R.id.msgLayout)
-        val nicknameArea = cView.findViewById<TextView>(R.id.msgNicknameArea)
-        val dateArea = cView.findViewById<TextView>(R.id.msgDateArea)
-        val contentArea = cView.findViewById<TextView>(R.id.msgContentArea)
-
+    override fun onBindViewHolder(holder: MsgViewHolder, position: Int) {
+        val msg = items[position]
         val uid = FirebaseAuthUtils.getUid()
 
-        if (uid != items[position].senderUid) {
-            layout.gravity = Gravity.LEFT
-            nicknameArea.text = targetNickname
+        // 메시지의 정렬
+        if (uid != msg.senderUid) {
+            holder.layout.gravity = Gravity.LEFT
+            holder.nicknameArea.text = targetNickname
         } else {
-            nicknameArea.text = MyInfo.myNickname
+            holder.layout.gravity = Gravity.RIGHT
+            holder.nicknameArea.text = MyInfo.myNickname
         }
-        dateArea.text = items[position].sendDate.toLocalDateTime().format(DateTimeFormatter.ofPattern("a h:mm"))
-        contentArea.text = items[position].sendTxt
+
+        // 메시지 내용 및 시간 설정
+        holder.dateArea.text = msg.sendDate.toLocalDateTime().format(DateTimeFormatter.ofPattern("a h:mm"))
+        holder.contentArea.text = msg.sendTxt
 
         // msg 영역 최대 width 설정
-        contentArea.post {
-            val params = contentArea.layoutParams as LinearLayout.LayoutParams
+        holder.contentArea.post {
+            val params = holder.contentArea.layoutParams as LinearLayout.LayoutParams
             val maxAllowedWidth = (maxWidth * 0.6).toInt()
-            val nicknameWidth = nicknameArea.measuredWidth
-            val contentWidth = contentArea.measuredWidth
+            val nicknameWidth = holder.nicknameArea.measuredWidth
+            val contentWidth = holder.contentArea.measuredWidth
 
             if (contentWidth + nicknameWidth > maxAllowedWidth) {
                 params.width = maxAllowedWidth - nicknameWidth
             } else {
                 params.width = LinearLayout.LayoutParams.WRAP_CONTENT
             }
-            contentArea.layoutParams = params
+            holder.contentArea.layoutParams = params
         }
-
-        return cView
-
     }
+
+    override fun getItemCount(): Int = items.size
+
 }
