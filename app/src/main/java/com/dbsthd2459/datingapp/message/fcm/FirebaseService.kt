@@ -5,6 +5,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -39,31 +41,49 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     }
 
+    @SuppressLint("ObsoleteSdkInt")
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+            .build()
+
+        val soundUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.notice)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "name"
             val descriptionText = "description"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("Test_Channel", name, importance).apply {
-                description = descriptionText
-            }
+
             // Register the channel with the system
             val notificationManager: NotificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+
+            val existingChannel = notificationManager.getNotificationChannel("Chat_Channel")
+            if (existingChannel == null) {
+                // 채널 생성 코드
+                val channel = NotificationChannel("Chat_Channel", name, importance).apply {
+                    description = descriptionText
+                    enableVibration(true)
+                    setSound(soundUri, audioAttributes)
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
+
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun sendNotification(title : String, body: String){
 
-        var builder = NotificationCompat.Builder(this, "Test_Channel")
+        val builder = NotificationCompat.Builder(this, "Chat_Channel")
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle(title)
             .setContentText(body)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
         with(NotificationManagerCompat.from(this)) {
             notify(123, builder.build())
         }

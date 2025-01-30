@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.AudioAttributes
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -52,12 +53,12 @@ class MainActivity : AppCompatActivity() {
         ActivityResultContracts.RequestPermission(),
     ) { isGranted: Boolean ->
         if (isGranted) {
-            Toast.makeText(this, "Notifications permission granted", Toast.LENGTH_SHORT)
+            Toast.makeText(this, "알림 권한에 동의하셨습니다.", Toast.LENGTH_SHORT)
                 .show()
         } else {
             Toast.makeText(
                 this,
-                "FCM can't post notifications without POST_NOTIFICATIONS permission",
+                "매칭을 위해 알림 권한이 필요합니다.",
                 Toast.LENGTH_LONG,
             ).show()
         }
@@ -90,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 if (direction == Direction.Left) {
-
+                    userDislikeOtherUser(uid, usersDataList[userCount].uid.toString())
                 }
 
                 userCount = userCount + 1
@@ -165,24 +166,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getUserDataList(currentUserGender : String) {
-        usersDataList.clear()
 
         val postListener = object : ValueEventListener {
             @SuppressLint("NotifyDataSetChanged")
             override fun onDataChange(dataSnapshot: DataSnapshot) {
 
-                for (dataModel in dataSnapshot.children) {
+                dataSnapshot.children.shuffled().take(10).forEach {
+                    val user = it.getValue(UserDataModel::class.java)
 
-                    val user = dataModel.getValue(UserDataModel::class.java)
-
-                    if (user!!.gender.toString() == currentUserGender) {
-
-                    } else {
-
-                        if (uid != user.uid) usersDataList.add(user)
-
-                    }
-
+                    if (user!!.gender.toString() != currentUserGender) usersDataList.add(user)
                 }
 
                 cardStackAdapter.notifyDataSetChanged()
@@ -201,6 +193,12 @@ class MainActivity : AppCompatActivity() {
         FirebaseRef.userLikeRef.child(myUid).child(otherUid).setValue("true")
 
         getOtherUserLikeList(otherUid)
+
+    }
+
+    private fun userDislikeOtherUser(myUid: String, otherUid: String) {
+
+        FirebaseRef.userLikeRef.child(myUid).child(otherUid).removeValue()
 
     }
 
@@ -238,29 +236,46 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("ObsoleteSdkInt")
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is not in the Support Library.
+        // the NotificationChannel class is new and not in the support library
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+            .build()
+
+        val soundUri = Uri.parse("android.resource://" + packageName + "/" + R.raw.notice)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = "name"
             val descriptionText = "description"
             val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = NotificationChannel("Test_Channel", name, importance).apply {
-                description = descriptionText
-            }
-            // Register the channel with the system.
+
+            // Register the channel with the system
             val notificationManager: NotificationManager =
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+
+            val existingChannel = notificationManager.getNotificationChannel("Main_Channel")
+            if (existingChannel == null) {
+                // 채널 생성 코드
+                val channel = NotificationChannel("Main_Channel", name, importance).apply {
+                    description = descriptionText
+                    enableVibration(true)
+                    setSound(soundUri, audioAttributes)
+                }
+                notificationManager.createNotificationChannel(channel)
+            }
+
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun sendMatchNotification() {
 
-        var builder = NotificationCompat.Builder(this, "Test_Channel")
+        val builder = NotificationCompat.Builder(this, "Main_Channel")
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle("매칭완료")
             .setContentText("매칭이 완료되었습니다. 저 사람도 나를 좋아해요!")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
         with(NotificationManagerCompat.from(this)) {
             notify(123, builder.build())
         }

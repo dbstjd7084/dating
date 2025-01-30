@@ -1,11 +1,11 @@
 package com.dbsthd2459.datingapp.message
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -29,6 +29,7 @@ class MsgAdapter(val context : Context, val items : MutableList<MsgModel>, val t
         return MsgViewHolder(view)
     }
 
+    @SuppressLint("RtlHardcoded")
     override fun onBindViewHolder(holder: MsgViewHolder, position: Int) {
         val msg = items[position]
         val uid = FirebaseAuthUtils.getUid()

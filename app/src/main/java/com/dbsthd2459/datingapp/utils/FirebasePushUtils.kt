@@ -1,7 +1,6 @@
 package com.dbsthd2459.datingapp.utils
 
 import android.util.Log
-import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils.Companion.getAccessToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

@@ -6,7 +6,6 @@ import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.auth.IntroActivity
-import com.dbsthd2459.datingapp.message.ChatActivity
 import com.dbsthd2459.datingapp.message.MyLikeListActivity
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase

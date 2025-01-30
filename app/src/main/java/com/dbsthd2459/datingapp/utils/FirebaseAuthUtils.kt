@@ -1,25 +1,13 @@
 package com.dbsthd2459.datingapp.utils
 
-import android.annotation.SuppressLint
 import android.util.Log
-import com.bumptech.glide.Glide
-import com.dbsthd2459.datingapp.R
-import com.dbsthd2459.datingapp.auth.UserDataModel
-import com.dbsthd2459.datingapp.utils.MyInfo.Companion.myNickname
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
 import java.io.InputStream
 
 class FirebaseAuthUtils {
