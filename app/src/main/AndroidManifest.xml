@@ -32,9 +32,6 @@
             android:name=".message.MyLikeListActivity"
             android:exported="false" />
         <activity
-            android:name=".setting.SettingActivity"
-            android:exported="false" />
-        <activity
             android:name=".setting.MyPageActivity"
             android:exported="false" />
         <activity
