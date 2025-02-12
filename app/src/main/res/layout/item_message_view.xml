@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:background="@android:color/transparent"
     android:id="@+id/msgLayout"
-    android:gravity="right">
+    android:gravity="right"
+    tools:ignore="RtlHardcoded">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -21,7 +23,8 @@
             android:layout_marginHorizontal="7dp"
             android:fontFamily="@font/nanumsquare_acbold"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/msgContentArea"
@@ -34,7 +37,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="5"
-            android:ellipsize="end" />
+            android:ellipsize="end"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/msgDateArea"
@@ -44,7 +48,8 @@
             android:layout_gravity="bottom"
             android:fontFamily="@font/nanumsquare_acbold"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            tools:ignore="HardcodedText" />
 
     </LinearLayout>
 

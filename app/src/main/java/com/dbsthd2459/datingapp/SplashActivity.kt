@@ -1,5 +1,6 @@
 package com.dbsthd2459.datingapp
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -7,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.dbsthd2459.datingapp.auth.IntroActivity
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 
+@SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

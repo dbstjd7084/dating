@@ -13,7 +13,6 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -21,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
-import com.dbsthd2459.datingapp.auth.JoinActivity
 import com.dbsthd2459.datingapp.auth.UserDataModel
 import com.dbsthd2459.datingapp.message.MyLikeListActivity
 import com.dbsthd2459.datingapp.setting.MyPageActivity

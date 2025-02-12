@@ -4,14 +4,14 @@
 
     <item
         android:id="@+id/nav_chat"
-        android:title="채팅 화면" />
+        android:title="@string/nav_chat" />
 
     <item
         android:id="@+id/nav_matching"
-        android:title="매칭 화면" />
+        android:title="@string/nav_matching" />
 
     <item
         android:id="@+id/nav_profile"
-        android:title="내 프로필" />
+        android:title="@string/nav_profile" />
 
 </menu>

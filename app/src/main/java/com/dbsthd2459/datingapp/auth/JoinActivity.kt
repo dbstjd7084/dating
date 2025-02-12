@@ -3,7 +3,6 @@ package com.dbsthd2459.datingapp.auth
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -51,18 +50,17 @@ class JoinActivity : AppCompatActivity() {
         profileImage = findViewById<ImageView>(R.id.imageArea)
 
         val getAction = registerForActivityResult(
-            ActivityResultContracts.GetContent(),
-            ActivityResultCallback { uri ->
-                if (uri != null) {
-                    // 이미지가 선택되었을 때
-                    profileImage.setImageURI(uri)
-                    imageUploaded = true
-                } else {
-                    // 이미지 선택이 취소된 경우 (uri가 null)
-                    Toast.makeText(this, "이미지 선택이 취소되었습니다.", Toast.LENGTH_SHORT).show()
-                }
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            if (uri != null) {
+                // 이미지가 선택되었을 때
+                profileImage.setImageURI(uri)
+                imageUploaded = true
+            } else {
+                // 이미지 선택이 취소된 경우 (uri가 null)
+                Toast.makeText(this, "이미지 선택이 취소되었습니다.", Toast.LENGTH_SHORT).show()
             }
-        )
+        }
 
         profileImage.setOnClickListener {
             getAction.launch("image/*")
@@ -167,7 +165,7 @@ class JoinActivity : AppCompatActivity() {
     private fun uploadImage(uid : String) {
 
         val storage = Firebase.storage
-        val storageRef = storage.reference.child(uid + ".png")
+        val storageRef = storage.reference.child("$uid.png")
 
         profileImage.isDrawingCacheEnabled = true
         profileImage.buildDrawingCache()
@@ -176,7 +174,7 @@ class JoinActivity : AppCompatActivity() {
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
         val data = baos.toByteArray()
 
-        var uploadTask = storageRef.putBytes(data)
+        val uploadTask = storageRef.putBytes(data)
         uploadTask.addOnFailureListener {
             // Handle unsuccessful uploads
         }.addOnSuccessListener { taskSnapshot ->
