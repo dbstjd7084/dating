@@ -46,6 +46,7 @@
             android:layout_margin="10dp"
             android:layout_weight="1"
             android:background="@android:color/transparent"
+            android:fontFamily="@font/nanumsquare_acbold"
             android:hint="텍스트를 입력하세요" />
 
         <Button
@@ -58,6 +59,7 @@
             android:background="@color/mainColor"
             android:padding="0dp"
             android:text="전송"
+            android:fontFamily="@font/nanumsquare_acbold"
             android:textSize="12sp" />
 
     </LinearLayout>

@@ -22,6 +22,7 @@
             android:background="@color/mainColor"
             android:layout_margin="10dp"
             android:textColor="@color/white"
+            android:fontFamily="@font/nanumsquare_acbold"
             android:text="JOIN" />
 
         <Button
@@ -31,6 +32,7 @@
             android:background="@color/mainColor"
             android:layout_margin="10dp"
             android:textColor="@color/white"
+            android:fontFamily="@font/nanumsquare_acbold"
             android:text="LOGIN" />
 
     </LinearLayout>

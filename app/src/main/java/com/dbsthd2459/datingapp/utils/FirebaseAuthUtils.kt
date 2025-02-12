@@ -18,6 +18,7 @@ class FirebaseAuthUtils {
 
         private lateinit var uid: String
         private lateinit var token: String
+        private lateinit var email: String
 
         fun getUid() : String {
 
@@ -25,8 +26,19 @@ class FirebaseAuthUtils {
 
             auth = FirebaseAuth.getInstance()
 
-            return auth.currentUser?.uid.toString()
+            uid = auth.currentUser?.uid.toString()
+            return uid
 
+        }
+
+        fun getEmail(): String? {
+
+            if (::email.isInitialized) return email
+
+            auth = FirebaseAuth.getInstance()
+
+            email = auth.currentUser?.email.toString()
+            return email
         }
 
         fun getNickname(targetUid: String, callback: (String) -> Unit) {

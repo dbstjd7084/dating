@@ -34,6 +34,7 @@
                     android:id="@+id/emailArea"
                     android:hint="email"
                     android:layout_width="match_parent"
+                    android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content"/>
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -51,6 +52,7 @@
                     android:id="@+id/pwdArea"
                     android:hint="pwd"
                     android:layout_width="match_parent"
+                    android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -65,8 +67,10 @@
                 android:theme="@style/TextInputStyle">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/pwdCheckArea"
                     android:hint="pwdCheck"
                     android:layout_width="match_parent"
+                    android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -74,7 +78,7 @@
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:counterMaxLength="10"
+                app:counterMaxLength="12"
                 app:counterEnabled="true"
                 android:layout_margin="10dp"
                 style="@style/TextInputStyle"
@@ -84,24 +88,11 @@
                     android:id="@+id/nicknameArea"
                     android:hint="닉네임"
                     android:layout_width="match_parent"
+                    android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                style="@style/TextInputStyle"
-                android:theme="@style/TextInputStyle">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/genderArea"
-                    android:hint="성별(M/W)"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-
-            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -114,21 +105,71 @@
                     android:id="@+id/cityArea"
                     android:hint="지역"
                     android:layout_width="match_parent"
+                    android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp"
+                android:layout_marginHorizontal="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="성별 선택"
+                    android:fontFamily="@font/nanumsquare_acbold"
+                    android:layout_marginLeft="5dp"
+                    android:textSize="19sp"
+                    android:textColor="@color/mainColor"/>
+
+                <RadioGroup
+                    android:id="@+id/radioGroupGender"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/radioMale"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="남자"
+                        android:fontFamily="@font/nanumsquare_acbold"
+                        android:textSize="17dp"
+                        android:textColor="@color/mainColor"/>
+
+                    <RadioButton
+                        android:id="@+id/radioFemale"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="여자"
+                        android:fontFamily="@font/nanumsquare_acbold"
+                        android:textSize="17dp"
+                        android:layout_marginLeft="20dp"
+                        android:textColor="@color/mainColor"/>
+                </RadioGroup>
+
+            </LinearLayout>
+
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="10dp"
                 style="@style/TextInputStyle"
+                android:layout_margin="10dp"
+                app:counterMaxLength="3"
+                app:counterEnabled="true"
                 android:theme="@style/TextInputStyle">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/ageArea"
                     android:hint="나이"
+                    android:inputType="number"
+                    android:maxLength="3"
                     android:layout_width="match_parent"
+                    android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -139,6 +180,7 @@
                 android:text="회원가입"
                 android:layout_width="match_parent"
                 android:background="@color/mainColor"
+                android:fontFamily="@font/nanumsquare_acbold"
                 android:layout_height="wrap_content" />
 
         </LinearLayout>

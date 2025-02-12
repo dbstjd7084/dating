@@ -20,7 +20,7 @@ class SplashActivity : AppCompatActivity() {
 
             Handler().postDelayed({
                 val intent = Intent(this, IntroActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION) // 액티비티 전환 애니메이션 제거
                 startActivity(intent)
                 finish()
             }, 2000)
@@ -29,7 +29,6 @@ class SplashActivity : AppCompatActivity() {
 
             Handler().postDelayed({
                 val intent = Intent(this, MainActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
                 startActivity(intent)
                 finish()
             }, 2000)

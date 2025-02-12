@@ -1,5 +1,6 @@
 package com.dbsthd2459.datingapp.slider
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -37,6 +38,7 @@ class CardStackAdapter(val context : Context, val items : List<UserDataModel>) :
         val age = itemView.findViewById<TextView>(R.id.itemAge)
         val city = itemView.findViewById<TextView>(R.id.itemCity)
 
+        @SuppressLint("SetTextI18n")
         fun binding(data : UserDataModel) {
 
             val storageRef = Firebase.storage.reference.child(data.uid + ".png")
@@ -49,7 +51,7 @@ class CardStackAdapter(val context : Context, val items : List<UserDataModel>) :
                 }
             })
 
-            nickname.text = data.nickname
+            nickname.text = data.nickname + ","
             age.text = data.age
             city.text = data.city
 

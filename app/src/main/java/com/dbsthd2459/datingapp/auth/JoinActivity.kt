@@ -3,10 +3,14 @@ package com.dbsthd2459.datingapp.auth
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.RadioButton
+import android.widget.RadioGroup
+import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +39,7 @@ class JoinActivity : AppCompatActivity() {
     private var uid = ""
 
     lateinit var profileImage : ImageView
+    var imageUploaded = false // 프로필 이미지 등록 여부
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -48,7 +53,14 @@ class JoinActivity : AppCompatActivity() {
         val getAction = registerForActivityResult(
             ActivityResultContracts.GetContent(),
             ActivityResultCallback { uri ->
-                profileImage.setImageURI(uri)
+                if (uri != null) {
+                    // 이미지가 선택되었을 때
+                    profileImage.setImageURI(uri)
+                    imageUploaded = true
+                } else {
+                    // 이미지 선택이 취소된 경우 (uri가 null)
+                    Toast.makeText(this, "이미지 선택이 취소되었습니다.", Toast.LENGTH_SHORT).show()
+                }
             }
         )
 
@@ -65,17 +77,39 @@ class JoinActivity : AppCompatActivity() {
 
             val emailCheck = email.text.toString()
 
-            // 이메일 작성했는지
-            // 비밀번호 작성했는지
-            /*if (emailCheck.isEmpty()) {
-                Toast.makeText(this, "비어있음", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "채워져있음", Toast.LENGTH_SHORT).show()
-            }*/
+            // 이메일 작성 확인
+            if (emailCheck.isBlank()) {
+                Toast.makeText(this, "이메일을 작성해주세요!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            } else if (!emailCheck.contains("@") ||
+                !emailCheck.contains(".")) {
+                Toast.makeText(this, "올바른 이메일 형식이 아닙니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            // 비밀번호 작성 확인
+            if (pwd.text.toString().isBlank() ||
+                pwd.text.toString().length < 6) {
+                Toast.makeText(this, "비밀번호를 6자 이상 작성해주세요", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             // pwd와 pwdCheck 둘 다 같은지
+            if (pwd.text.toString() != findViewById<TextInputEditText>(R.id.pwdCheckArea).text.toString()) {
+                Toast.makeText(this, "입력한 비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-            gender = findViewById<TextInputEditText>(R.id.genderArea).text.toString()
+            val radioGender = findViewById<RadioGroup>(R.id.radioGroupGender)
+            if (radioGender.checkedRadioButtonId == -1) {
+                Toast.makeText(this, "성별을 선택해주세요!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            } else {
+                val checked = findViewById<RadioButton>(radioGender.checkedRadioButtonId).text.toString()
+                if (checked == "남자") {
+                    gender = "M"
+                } else gender = "W"
+            }
+
             city = findViewById<TextInputEditText>(R.id.cityArea).text.toString()
             age = findViewById<TextInputEditText>(R.id.ageArea).text.toString()
             nickname = findViewById<TextInputEditText>(R.id.nicknameArea).text.toString()
@@ -90,7 +124,13 @@ class JoinActivity : AppCompatActivity() {
                         FirebaseMessaging.getInstance().token.addOnCompleteListener(
                             OnCompleteListener { task ->
                                 if (!task.isSuccessful) {
+                                    val errorMessage = task.exception?.localizedMessage ?: "회원가입에 실패했습니다."
+                                    Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                                     Log.w(TAG, "Fetching FCM registration token failed", task.exception)
+                                    return@OnCompleteListener
+                                }
+                                if (!imageUploaded) {
+                                    Toast.makeText(this, "프로필 이미지를 등록해주세요!", Toast.LENGTH_SHORT).show()
                                     return@OnCompleteListener
                                 }
 
@@ -123,6 +163,7 @@ class JoinActivity : AppCompatActivity() {
 
     }
 
+    // 가입 시 프로필 이미지 등록
     private fun uploadImage(uid : String) {
 
         val storage = Firebase.storage
@@ -139,8 +180,8 @@ class JoinActivity : AppCompatActivity() {
         uploadTask.addOnFailureListener {
             // Handle unsuccessful uploads
         }.addOnSuccessListener { taskSnapshot ->
-            // taskSnapshot.metadata contains file metadata such as size, content-type, etc.
-            // ...
+            // 업로드 완료 후 메모리 관리를 위한 액티비티 종료
+            finish()
         }
     }
 }
