@@ -21,12 +21,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.dbsthd2459.datingapp.auth.JoinActivity
 import com.dbsthd2459.datingapp.auth.UserDataModel
-import com.dbsthd2459.datingapp.setting.SettingActivity
+import com.dbsthd2459.datingapp.message.MyLikeListActivity
+import com.dbsthd2459.datingapp.setting.MyPageActivity
 import com.dbsthd2459.datingapp.slider.CardStackAdapter
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebaseRef
 import com.dbsthd2459.datingapp.utils.MyInfo
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -68,14 +71,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val setting = findViewById<ImageView>(R.id.settingIcon)
-        setting.setOnClickListener {
-
-            val intent = Intent(this, SettingActivity::class.java)
-            startActivity(intent)
-
-        }
 
         val cardStackView = findViewById<CardStackView>(R.id.cardStackView)
 
@@ -119,6 +114,8 @@ class MainActivity : AppCompatActivity() {
             }
 
         })
+        // 스와이프 방향 좌우로 지정
+        manager.setDirections(listOf(Direction.Left, Direction.Right))
 
         cardStackAdapter = CardStackAdapter(baseContext, usersDataList)
         cardStackView.layoutManager = manager
@@ -126,8 +123,34 @@ class MainActivity : AppCompatActivity() {
 
         getMyUserData()
 
+        // Notification 권한 묻기
         askNotificationPermission()
 
+        // 네비게이션 바 클릭 시 이벤트 설정
+        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_profile -> {
+                    val intent = Intent(this, MyPageActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_chat -> {
+                    val intent = Intent(this, MyLikeListActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_matching -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private fun askNotificationPermission() {

@@ -11,4 +11,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="350dp"
+        android:layout_height="81dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/nav_bg"
+        app:menu="@menu/bottom_navigation_menu"
+        app:labelVisibilityMode="unlabeled"
+        app:itemIconSize="40dp"
+        app:itemIconTint="@color/bottom_nav_color"
+        app:itemRippleColor="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

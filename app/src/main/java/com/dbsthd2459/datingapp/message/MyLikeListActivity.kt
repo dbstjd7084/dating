@@ -12,13 +12,16 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.dbsthd2459.datingapp.MainActivity
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.auth.UserDataModel
+import com.dbsthd2459.datingapp.setting.MyPageActivity
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebasePushUtils.Companion.sendPush
 import com.dbsthd2459.datingapp.utils.FirebaseRef
 import com.dbsthd2459.datingapp.utils.LocalDateTimeUtils.Companion.toTimestamp
 import com.dbsthd2459.datingapp.utils.MyInfo
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -69,6 +72,32 @@ class MyLikeListActivity : AppCompatActivity() {
             }
 
             return@setOnItemLongClickListener(true)
+        }
+
+        // 네비게이션 바 클릭 시 이벤트 설정
+        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_profile -> {
+                    val intent = Intent(this, MyPageActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_chat -> {
+                    val intent = Intent(this, MyLikeListActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                R.id.nav_matching -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+                else -> false
+            }
         }
 
     }
