@@ -62,7 +62,7 @@ class MyLikeListActivity : AppCompatActivity() {
 
         userListView.setOnItemLongClickListener { parent, view, position, id ->
 
-            Toast.makeText(this@MyLikeListActivity, "꾹 눌러서 보냈수", Toast.LENGTH_LONG).show()
+            Toast.makeText(this@MyLikeListActivity, "상대방에게 관심을 표했어요", Toast.LENGTH_LONG).show()
 
             lifecycleScope.launch {
 
