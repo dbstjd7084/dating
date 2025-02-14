@@ -33,6 +33,7 @@
             android:exported="false" />
         <activity
             android:name=".setting.MyPageActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         <activity
             android:name=".auth.LoginActivity"

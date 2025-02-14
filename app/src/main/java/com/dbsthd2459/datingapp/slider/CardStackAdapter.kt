@@ -37,6 +37,7 @@ class CardStackAdapter(val context : Context, val items : List<UserDataModel>) :
         val nickname = itemView.findViewById<TextView>(R.id.itemNickname)
         val age = itemView.findViewById<TextView>(R.id.itemAge)
         val city = itemView.findViewById<TextView>(R.id.itemCity)
+        val comment = itemView.findViewById<TextView>(R.id.itemComment)
 
         @SuppressLint("SetTextI18n")
         fun binding(data : UserDataModel) {
@@ -54,6 +55,12 @@ class CardStackAdapter(val context : Context, val items : List<UserDataModel>) :
             nickname.text = data.nickname + ","
             age.text = data.age
             city.text = data.city
+            if (data.comment.isNullOrEmpty()) comment.text = "작성된 소개말이 없어요!"
+            else {
+                comment.text = data.comment
+                comment.maxLines = 3
+                comment.ellipsize = android.text.TextUtils.TruncateAt.END
+            }
 
         }
 
