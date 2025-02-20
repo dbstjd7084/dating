@@ -32,7 +32,7 @@
             android:name=".message.MyLikeListActivity"
             android:exported="false" />
         <activity
-            android:name=".setting.MyPageActivity"
+            android:name=".mypage.MyPageActivity"
             android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         <activity

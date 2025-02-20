@@ -22,7 +22,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.dbsthd2459.datingapp.auth.UserDataModel
 import com.dbsthd2459.datingapp.message.MyLikeListActivity
-import com.dbsthd2459.datingapp.setting.MyPageActivity
+import com.dbsthd2459.datingapp.mypage.MyPageActivity
 import com.dbsthd2459.datingapp.slider.CardStackAdapter
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebaseRef

@@ -1,8 +1,12 @@
-package com.dbsthd2459.datingapp.setting
+package com.dbsthd2459.datingapp.mypage
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.res.AssetManager
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,9 +17,13 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.dbsthd2459.datingapp.MainActivity
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.auth.IntroActivity
@@ -31,6 +39,12 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
+import org.tensorflow.lite.Interpreter
+import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.channels.FileChannel
 
 class MyPageActivity : AppCompatActivity() {
 
@@ -42,6 +56,11 @@ class MyPageActivity : AppCompatActivity() {
     private lateinit var completeBtn: TextView // 확인 버튼
     private var completeIsEnabled = false // 확인 버튼 활성화 여부
     private var initComment = ""
+    private lateinit var myImage: ImageView // 프로필 이미지
+
+    private lateinit var interpreter: Interpreter
+    private val imageSize = 224 // 이미지 크기
+    private val outputBuffer = Array(1) { FloatArray(5) } // 모델의 출력 크기
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -180,11 +199,35 @@ class MyPageActivity : AppCompatActivity() {
             editText.requestFocus()
             if (!editText.text.isNullOrEmpty()) editText.setSelection(editText.text!!.length)
         }
+
+        // 프로필 이미지 클릭 시 프로필 이미지 재설정 띄우기
+        myImage = findViewById(R.id.myImage)
+        val getAction = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            if (uri != null) {
+                val profileImage = findViewById<ImageView>(R.id.imageArea)
+                profileImage.setImageURI(uri)
+                // Firebase 업로드
+                uploadImage(uid)
+                Toast.makeText(this, "프로필 이미지를 변경했습니다.", Toast.LENGTH_SHORT).show()
+                val faceScoreView = findViewById<TextView>(R.id.checkMyScoreByAI)
+                faceScoreView.text = "AI가 외모 점수를 산정중입니다.."
+            } else {
+                // 이미지 선택이 취소된 경우 (uri가 null)
+                Toast.makeText(baseContext, "이미지 선택이 취소되었습니다.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        myImage.setOnClickListener {
+            getAction.launch("image/*")
+        }
+
+        // 얼굴 점수 AI 모델 로드
+        loadModel(assets)
     }
 
     private fun getMyData() {
-
-        val myImage = findViewById<ImageView>(R.id.myImage)
 
         val myEmail = findViewById<TextView>(R.id.myEmail)
         val myNickname = findViewById<TextView>(R.id.myNickname)
@@ -221,10 +264,30 @@ class MyPageActivity : AppCompatActivity() {
 
                 storageRef.downloadUrl.addOnCompleteListener({ task ->
                     if (task.isSuccessful) {
+                        // 프로필 이미지 설정
                         Glide.with(baseContext)
                             .load(task.result)
                             .circleCrop()
                             .into(myImage)
+
+                        // 프로필 이미지로 AI 외모 점수 계산 및 적용
+                        // Glide를 사용하여 이미지 다운로드 및 Bitmap으로 변환
+                        Glide.with(baseContext)
+                            .asBitmap()
+                            .load(task.result)
+                            .into(object : CustomTarget<Bitmap>() {
+                                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                                    // Bitmap 이미지를 사용하여 얼굴 평가 모델 실행
+                                    runFaceRatingModel(resource)
+                                }
+
+                                override fun onLoadCleared(placeholder: Drawable?) {
+                                    // 필요한 경우 구현
+                                }
+                            })
+                    } else {
+                        // 이미지 다운로드 실패 처리
+                        Toast.makeText(baseContext, "이미지 다운로드 실패", Toast.LENGTH_SHORT).show()
                     }
                 })
 
@@ -237,5 +300,119 @@ class MyPageActivity : AppCompatActivity() {
             }
         }
         FirebaseRef.userInfoRef.child(uid).addValueEventListener(postListener)
+    }
+
+    // 프로필 이미지 업로드
+    private fun uploadImage(uid : String) {
+
+        val storage = Firebase.storage
+        val storageRef = storage.reference.child("$uid.png")
+
+        val profileImage = findViewById<ImageView>(R.id.imageArea)
+        profileImage.isDrawingCacheEnabled = true
+        profileImage.buildDrawingCache()
+        val bitmap = (profileImage.drawable as BitmapDrawable).bitmap
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val data = baos.toByteArray()
+
+        val uploadTask = storageRef.putBytes(data)
+        uploadTask.addOnFailureListener {
+            // Handle unsuccessful uploads
+        }.addOnSuccessListener { taskSnapshot ->
+            // 업로드 완료 후 메모리 관리를 위한 액티비티 종료
+            val storageRef = Firebase.storage.reference.child(uid + ".png")
+
+            storageRef.downloadUrl.addOnCompleteListener({ task ->
+                if (task.isSuccessful) {
+                    // 프로필 이미지 설정
+                    Glide.with(baseContext)
+                        .load(task.result)
+                        .circleCrop()
+                        .into(myImage)
+
+                    // 프로필 이미지로 AI 외모 점수 계산 및 적용
+                    // Glide를 사용하여 이미지 다운로드 및 Bitmap으로 변환
+                    Glide.with(baseContext)
+                        .asBitmap()
+                        .load(task.result)
+                        .into(object : CustomTarget<Bitmap>() {
+                            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                                // Bitmap 이미지를 사용하여 얼굴 평가 모델 실행
+                                runFaceRatingModel(resource)
+                            }
+
+                            override fun onLoadCleared(placeholder: Drawable?) {
+                                // 필요한 경우 구현
+                            }
+                        })
+                } else {
+                    // 이미지 다운로드 실패 처리
+                    Toast.makeText(baseContext, "이미지 다운로드 실패", Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+    }
+
+    // 모델 로드 함수 (onCreate 또는 초기화 시 호출)
+    fun loadModel(assetManager: AssetManager) {
+        val fileDescriptor = assetManager.openFd("Facial_rating_model.tflite")
+        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = fileDescriptor.startOffset
+        val declaredLength = fileDescriptor.declaredLength
+        val modelBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+        interpreter = Interpreter(modelBuffer)
+    }
+
+    // 이미지 전처리 함수
+    fun preprocessImage(bitmap: Bitmap, imageSize: Int): ByteBuffer {
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, imageSize, imageSize, true)
+        val inputBuffer = ByteBuffer.allocateDirect(1 * imageSize * imageSize * 3 * 4)
+        inputBuffer.order(ByteOrder.nativeOrder())
+
+        val pixels = IntArray(imageSize * imageSize)
+        resizedBitmap.getPixels(pixels, 0, imageSize, 0, 0, imageSize, imageSize)
+
+        for (pixelValue in pixels) {
+            val r = (pixelValue shr 16 and 0xFF) / 255.0f
+            val g = (pixelValue shr 8 and 0xFF) / 255.0f
+            val b = (pixelValue and 0xFF) / 255.0f
+
+            inputBuffer.putFloat(r)
+            inputBuffer.putFloat(g)
+            inputBuffer.putFloat(b)
+        }
+
+        return inputBuffer
+    }
+
+    // 결과 처리 함수
+    fun postprocessOutput(outputBuffer: FloatArray): Int {
+        val predictedClass = outputBuffer.indices.maxByOrNull { outputBuffer[it] } ?: -1
+        return predictedClass
+    }
+
+    fun runInference(inputBuffer: ByteBuffer, outputBuffer: Array<FloatArray>) {
+        interpreter.run(inputBuffer, outputBuffer)
+    }
+
+    fun runFaceRatingModel(bitmap: Bitmap) {
+        try {
+            val inputBuffer = preprocessImage(bitmap, imageSize)
+            runInference(inputBuffer, outputBuffer)
+            val predictedScore = postprocessOutput(outputBuffer[0])
+
+            val faceScoreView = findViewById<TextView>(R.id.checkMyScoreByAI)
+            faceScoreView.text = "당신의 AI 외모 점수는 ${predictedScore}점 이에요!"
+        } catch (e: Exception) {
+            e.printStackTrace()
+            val errorMessage = when (e) {
+                is IllegalArgumentException -> "모델 입력 또는 출력 형식이 잘못되었습니다."
+                is IllegalStateException -> "모델 실행 중 오류가 발생했습니다."
+                else -> "알 수 없는 오류가 발생했습니다."
+            }
+            Toast.makeText(this, "모델 실행 중 오류 발생: $errorMessage", Toast.LENGTH_SHORT).show()
+        }
     }
 }

@@ -2,11 +2,13 @@ package com.dbsthd2459.datingapp.auth
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.dbsthd2459.datingapp.MainActivity
 import com.dbsthd2459.datingapp.R
+import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.google.android.material.textfield.TextInputEditText
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
@@ -34,6 +36,8 @@ class LoginActivity : AppCompatActivity() {
 
                         val intent = Intent(this, MainActivity::class.java)
                         startActivity(intent)
+                        Log.d("l-o-g", "Uid: "+ FirebaseAuthUtils.getUid())
+                        Log.d("l-o-g", "Email: " + FirebaseAuthUtils.getEmail())
                         finish()
 
                     } else {

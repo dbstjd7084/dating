@@ -47,7 +47,7 @@ class JoinActivity : AppCompatActivity() {
 
         auth = Firebase.auth
 
-        profileImage = findViewById<ImageView>(R.id.imageArea)
+        profileImage = findViewById(R.id.imageArea)
 
         val getAction = registerForActivityResult(
             ActivityResultContracts.GetContent()
