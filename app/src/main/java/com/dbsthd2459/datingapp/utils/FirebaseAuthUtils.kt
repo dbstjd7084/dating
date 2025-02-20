@@ -14,31 +14,18 @@ class FirebaseAuthUtils {
 
     companion object {
 
-        private lateinit var auth : FirebaseAuth
-
-        private lateinit var uid: String
         private lateinit var token: String
-        private lateinit var email: String
 
         fun getUid() : String {
 
-            if (::uid.isInitialized) return uid
-
-            auth = FirebaseAuth.getInstance()
-
-            uid = auth.currentUser?.uid.toString()
-            return uid
+            return FirebaseAuth.getInstance().currentUser?.uid.toString()
 
         }
 
         fun getEmail(): String? {
 
-            if (::email.isInitialized) return email
+            return FirebaseAuth.getInstance().currentUser?.email.toString()
 
-            auth = FirebaseAuth.getInstance()
-
-            email = auth.currentUser?.email.toString()
-            return email
         }
 
         fun getNickname(targetUid: String, callback: (String) -> Unit) {
