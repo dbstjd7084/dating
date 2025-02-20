@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.dbsthd2459.datingapp.MainActivity
 import com.dbsthd2459.datingapp.R
 import com.dbsthd2459.datingapp.auth.UserDataModel
-import com.dbsthd2459.datingapp.setting.MyPageActivity
+import com.dbsthd2459.datingapp.mypage.MyPageActivity
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebasePushUtils.Companion.sendPush
 import com.dbsthd2459.datingapp.utils.FirebaseRef
@@ -46,8 +47,10 @@ class MyLikeListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_my_like_list)
 
         val userListView = findViewById<ListView>(R.id.userListView)
+        val emptyView = findViewById<TextView>(R.id.emptyView)
 
         listviewAdapter = ListViewAdapter(this, likeUserList)
+        userListView.emptyView = emptyView
         userListView.adapter = listviewAdapter
 
         getMyLikeList()
@@ -180,43 +183,6 @@ class MyLikeListActivity : AppCompatActivity() {
             }
         }
         FirebaseRef.userInfoRef.addValueEventListener(postListener)
-    }
-
-    private fun showDialog() {
-
-        val mDialogView = LayoutInflater.from(this).inflate(0, null)
-        val mBuilder = AlertDialog.Builder(this)
-            .setView(mDialogView)
-            .setTitle("메세지 보내기")
-
-        val mAlertDialog = mBuilder.show()
-
-        val btn = mAlertDialog.findViewById<Button>(R.id.sendBtnArea)
-        val textArea = mAlertDialog.findViewById<EditText>(R.id.sendTextArea)
-        btn?.setOnClickListener {
-
-            val msgText = textArea!!.text.toString()
-
-            if (msgText.isEmpty()) {
-                Toast.makeText(this, "작성된 내용이 없습니다.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val msgModel = MsgModel(MyInfo.myNickname, LocalDateTime.now().toTimestamp(), msgText)
-
-            FirebaseRef.userMsgRef.child(getterUid).child(uid).setValue(msgModel)
-
-            lifecycleScope.launch {
-
-                sendPush(MyInfo.myNickname, msgText, getterToken, resources.openRawResource(R.raw.service_account))
-
-            }
-
-            mAlertDialog.dismiss()
-
-            Toast.makeText(this, "쪽지를 보냈습니다.", Toast.LENGTH_SHORT).show()
-        }
-
     }
 
 }
