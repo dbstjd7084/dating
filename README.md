@@ -44,10 +44,10 @@
      
 ## 주요 기능
 
-### 로딩 화면
+### Firebase
 <img src="https://github.com/dbstjd7084/dogcatgorithm/blob/567e3c7d5176f3a3b88911f062869dc9a4270dd4/images/2%20-%20%EB%A1%9C%EB%94%A9%20%ED%99%94%EB%A9%B4.gif" alt="2 - 로딩 화면" width="300"/><br>
 
-- 로딩 화면에서 gif 형태의 사진으로 고양이가 노는 모습을 볼 수 있습니다. 로딩하는 동안 반려동물 동반 시설에 대한 정보를 SQLite에 미리 가져와 저장합니다.
+- Firebase의 Auth, Database, Storage, Cloud Messaging 을 사용하여 계정, 유저 데이터를 관리하고, 특정 사용자에게 채팅 메시지, 매칭 완료 알림을 보냅니다.
 
 ### 홈
 <img src="https://github.com/dbstjd7084/dogcatgorithm/blob/7c81dae361b50b7f27891b83f143dd546392ac02/images/3%20-%20%ED%99%88%20%ED%99%94%EB%A9%B4.png" alt="3 - 홈 화면" width="300"/>
