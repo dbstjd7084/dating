@@ -35,10 +35,8 @@ class LoginActivity : AppCompatActivity() {
                     if (task.isSuccessful) {
 
                         val intent = Intent(this, MainActivity::class.java)
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                         startActivity(intent)
-                        Log.d("l-o-g", "Uid: "+ FirebaseAuthUtils.getUid())
-                        Log.d("l-o-g", "Email: " + FirebaseAuthUtils.getEmail())
-                        finish()
 
                     } else {
 

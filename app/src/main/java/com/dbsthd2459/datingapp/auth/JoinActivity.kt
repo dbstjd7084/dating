@@ -10,7 +10,6 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.dbsthd2459.datingapp.MainActivity
@@ -24,6 +23,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.ktx.storage
 import java.io.ByteArrayOutputStream
+
 
 class JoinActivity : AppCompatActivity() {
 
@@ -39,6 +39,8 @@ class JoinActivity : AppCompatActivity() {
 
     lateinit var profileImage : ImageView
     var imageUploaded = false // 프로필 이미지 등록 여부
+
+    var uploading = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -108,6 +110,16 @@ class JoinActivity : AppCompatActivity() {
                 } else gender = "W"
             }
 
+            if (!imageUploaded) {
+                Toast.makeText(this, "프로필 이미지를 등록해주세요!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (!uploading) {
+                Toast.makeText(this, "현재 회원가입 진행중 입니다..", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             city = findViewById<TextInputEditText>(R.id.cityArea).text.toString()
             age = findViewById<TextInputEditText>(R.id.ageArea).text.toString()
             nickname = findViewById<TextInputEditText>(R.id.nicknameArea).text.toString()
@@ -127,10 +139,6 @@ class JoinActivity : AppCompatActivity() {
                                     Log.w(TAG, "Fetching FCM registration token failed", task.exception)
                                     return@OnCompleteListener
                                 }
-                                if (!imageUploaded) {
-                                    Toast.makeText(this, "프로필 이미지를 등록해주세요!", Toast.LENGTH_SHORT).show()
-                                    return@OnCompleteListener
-                                }
 
                                 // Get new FCM registration token
                                 val token = task.result
@@ -146,10 +154,9 @@ class JoinActivity : AppCompatActivity() {
 
                                 FirebaseRef.userInfoRef.child(uid).setValue(userModel)
 
+                                uploading = true
                                 uploadImage(uid)
 
-                                val intent = Intent(this, MainActivity::class.java)
-                                startActivity(intent)
                         })
 
                     } else {
@@ -179,7 +186,10 @@ class JoinActivity : AppCompatActivity() {
             // Handle unsuccessful uploads
         }.addOnSuccessListener { taskSnapshot ->
             // 업로드 완료 후 메모리 관리를 위한 액티비티 종료
-            finish()
+            uploading = false
+            val intent = Intent(this, MainActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            startActivity(intent)
         }
     }
 }
