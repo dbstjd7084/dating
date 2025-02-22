@@ -45,7 +45,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val body = message.notification?.body ?: "No Body"
 
         createNotificationChannel()
-        sendNotification2(title, body)
+        sendNotification(title, body)
 
         // 만약 채팅 알림 시 상대방의 채팅 새로고침
         if (title != "알림 메세지" && title != "매칭완료") {
@@ -93,22 +93,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     @SuppressLint("MissingPermission")
     private fun sendNotification(title : String, body: String){
-
-        val builder = NotificationCompat.Builder(this, "Chat_Channel")
-            .setSmallIcon(R.drawable.ok)
-            .setContentTitle(title)
-            .setContentText(body)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setWhen(System.currentTimeMillis()) // 알림 등록 시간 지정
-            .setLargeIcon(BitmapFactory.decodeResource(resources, R.drawable.app_icon))
-
-        with(NotificationManagerCompat.from(this)) {
-            notify(123, builder.build())
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun sendNotification2(title : String, body: String){
 
         val storageRef = Firebase.storage.reference.child(FirebaseAuthUtils.getUid() + ".png")
 
