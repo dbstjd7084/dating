@@ -26,11 +26,14 @@ import com.dbsthd2459.datingapp.mypage.MyPageActivity
 import com.dbsthd2459.datingapp.slider.CardStackAdapter
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebaseRef
+import com.dbsthd2459.datingapp.utils.FirebaseRef.Companion.userInfoRef
 import com.dbsthd2459.datingapp.utils.MyInfo
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
 import com.yuyakaido.android.cardstackview.CardStackLayoutManager
 import com.yuyakaido.android.cardstackview.CardStackListener
 import com.yuyakaido.android.cardstackview.CardStackView
@@ -292,7 +295,7 @@ class MainActivity : AppCompatActivity() {
     private fun sendMatchNotification() {
 
         val builder = NotificationCompat.Builder(this, "Main_Channel")
-            .setSmallIcon(R.drawable.ic_launcher_background)
+            .setSmallIcon(R.drawable.ok)
             .setContentTitle("매칭완료")
             .setContentText("매칭이 완료되었습니다. 저 사람도 나를 좋아해요!")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

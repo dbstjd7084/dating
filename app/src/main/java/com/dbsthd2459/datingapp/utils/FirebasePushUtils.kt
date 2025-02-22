@@ -59,8 +59,12 @@ class FirebasePushUtils {
                     val response = client.newCall(request).execute()
                     if (response.isSuccessful) {
                         Log.d("FCM", "Notification sent: ${response.body?.string()}")
+                        Log.d("FCM", "Token: ${token}")
                     } else {
                         Log.e("FCM", "Failed to send notification: ${response.code}")
+                        Log.d("FCM", "Token: ${token}")
+                        val errorBody = response.body?.string() // 응답 본문 가져오기
+                        Log.e("FCM Error Body", errorBody ?: "No error body") // 응답 본문 로그 출력
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()

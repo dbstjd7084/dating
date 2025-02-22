@@ -110,9 +110,10 @@ class MyLikeListActivity : AppCompatActivity() {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
 
                 if (dataSnapshot.children.count() == 0) {
-                    Toast.makeText(this@MyLikeListActivity, "상대방이 좋아요한 사람이 아무도 없어요", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@MyLikeListActivity, "상대방이 관심을 표한 사람이 존재하지 않네요.", Toast.LENGTH_LONG).show()
                 } else {
 
+                    var moved = false
                     for (dataModel in dataSnapshot.children) {
 
                         val likeUserKey = dataModel.key.toString()
@@ -121,10 +122,13 @@ class MyLikeListActivity : AppCompatActivity() {
                             val intent = Intent(this@MyLikeListActivity, ChatActivity::class.java)
                             intent.putExtra("target", otherUid)
                             startActivity(intent)
-                        } else {
-                            Toast.makeText(this@MyLikeListActivity, "매칭이 되지 않아 채팅을 할 수 없습니다. 길게 눌러 푸시 알림을 보내보세요!", Toast.LENGTH_LONG).show()
+                            moved = true
                         }
 
+                    }
+
+                    if (!moved) {
+                        Toast.makeText(this@MyLikeListActivity, "매칭이 되지 않아 채팅을 할 수 없습니다. 길게 눌러 푸시 알림을 보내보세요!", Toast.LENGTH_LONG).show()
                     }
 
                 }

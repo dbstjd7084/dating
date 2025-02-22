@@ -1,11 +1,13 @@
 package com.dbsthd2459.datingapp.utils
 
 import android.util.Log
+import com.dbsthd2459.datingapp.utils.FirebaseRef.Companion.userInfoRef
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
@@ -13,8 +15,6 @@ import java.io.InputStream
 class FirebaseAuthUtils {
 
     companion object {
-
-        private lateinit var token: String
 
         fun getUid() : String {
 
@@ -40,10 +40,44 @@ class FirebaseAuthUtils {
                     Log.w("FirebaseAuthUtils", "loadPost:onCancelled", databaseError.toException())
                 }
             }
-            FirebaseRef.userInfoRef.child(targetUid).child("nickname").addListenerForSingleValueEvent(postListener)
+            userInfoRef.child(targetUid).child("nickname").addListenerForSingleValueEvent(postListener)
         }
 
-        // 알림 전송용 기기 토큰 가져오기
+        fun refreshToken() {
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // 최신 토큰을 가져옴
+                    val newToken = task.result
+                    Log.d("FCM", "New Token: $newToken")
+
+                    // Firebase에 저장된 사용자 UID 가져오기
+                    val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+                    // UID가 null이 아니면 토큰을 저장
+                    if (uid != null) {
+                        saveTokenToDatabase(newToken)
+                    } else {
+                        Log.e("FCM", "UID is null, cannot save token")
+                    }
+                } else {
+                    Log.e("FCM", "Fetching FCM token failed", task.exception)
+                }
+            }
+        }
+
+        // Firebase Realtime Database에 토큰 저장
+        private fun saveTokenToDatabase(token: String) {
+            userInfoRef.child(getUid()).child("token").setValue(token)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Log.d("FCM", "Token successfully updated to Firebase DB")
+                    } else {
+                        Log.e("FCM", "Failed to update token in Firebase DB", task.exception)
+                    }
+                }
+        }
+
+        // Uid의 기기 토큰 가져오기
         fun getToken(targetUid: String, callback: (String) -> Unit) {
             val postListener = object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -55,21 +89,20 @@ class FirebaseAuthUtils {
                     Log.w("FirebaseAuthUtils", "loadPost:onCancelled", databaseError.toException())
                 }
             }
-            FirebaseRef.userInfoRef.child(targetUid).child("token").addListenerForSingleValueEvent(postListener)
+            userInfoRef.child(targetUid).child("token").addListenerForSingleValueEvent(postListener)
         }
 
         suspend fun getAccessToken(inputStream: InputStream): String? {
-
-            if (::token.isInitialized) return token
 
             return withContext(Dispatchers.IO) {
                 try {
                     val credentials = GoogleCredentials.fromStream(inputStream)
                         .createScoped(listOf("https://www.googleapis.com/auth/cloud-platform"))
                     credentials.refreshIfExpired()
-                    token = credentials.accessToken.tokenValue
-                    token
+                    // 출력
+                    credentials.accessToken.tokenValue
                 } catch (e: Exception) {
+                    Log.e("FCM", "액세스 토큰 획득 중 오류 발생: ${e.message}")
                     e.printStackTrace()
                     null
                 }
