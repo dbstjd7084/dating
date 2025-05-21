@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.dbsthd2459.datingapp.MainActivity
 import com.dbsthd2459.datingapp.R
+import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebaseRef
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.material.textfield.TextInputEditText
@@ -99,6 +100,7 @@ class JoinActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // 성별 확인
             val radioGender = findViewById<RadioGroup>(R.id.radioGroupGender)
             if (radioGender.checkedRadioButtonId == -1) {
                 Toast.makeText(this, "성별을 선택해주세요!", Toast.LENGTH_SHORT).show()
@@ -110,12 +112,13 @@ class JoinActivity : AppCompatActivity() {
                 } else gender = "W"
             }
 
+            // 프로필 이미지 확인
             if (!imageUploaded) {
                 Toast.makeText(this, "프로필 이미지를 등록해주세요!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (!uploading) {
+            if (uploading) {
                 Toast.makeText(this, "현재 회원가입 진행중 입니다..", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -123,6 +126,27 @@ class JoinActivity : AppCompatActivity() {
             city = findViewById<TextInputEditText>(R.id.cityArea).text.toString()
             age = findViewById<TextInputEditText>(R.id.ageArea).text.toString()
             nickname = findViewById<TextInputEditText>(R.id.nicknameArea).text.toString()
+
+            // 지역 확인
+            if (city.isBlank()) {
+                Toast.makeText(this, "지역을 작성해주세요!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // 나이 확인
+            if (age.isBlank() ||
+                age.toIntOrNull() == null ||
+                age.toShort() < 1 ||
+                age.toShort() > 200) {
+                Toast.makeText(this, "나이를 작성하지 않았거나,\n올바른 값이 아닙니다.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // 닉네임 확인
+            if (nickname.isBlank()) {
+                Toast.makeText(this, "닉네임을 작성해주세요!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             auth.createUserWithEmailAndPassword(email.text.toString(), pwd.text.toString())
                 .addOnCompleteListener(this) { task ->
@@ -145,6 +169,7 @@ class JoinActivity : AppCompatActivity() {
 
                                 val userModel = UserDataModel(
                                     uid,
+                                    FirebaseAuthUtils.getEmail(),
                                     nickname,
                                     age,
                                     gender,

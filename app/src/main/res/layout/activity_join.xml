@@ -51,6 +51,7 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/pwdArea"
                     android:hint="pwd"
+                    android:maxLength="10"
                     android:layout_width="match_parent"
                     android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content" />
@@ -69,6 +70,7 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/pwdCheckArea"
                     android:hint="pwdCheck"
+                    android:maxLength="10"
                     android:layout_width="match_parent"
                     android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content" />
@@ -87,6 +89,7 @@
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/nicknameArea"
                     android:hint="닉네임"
+                    android:maxLength="12"
                     android:layout_width="match_parent"
                     android:fontFamily="@font/nanumsquare_acbold"
                     android:layout_height="wrap_content" />

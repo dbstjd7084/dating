@@ -1,4 +1,4 @@
-package com.dbsthd2459.datingapp.message
+package com.dbsthd2459.datingapp.message.adapters
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.dbsthd2459.datingapp.R
+import com.dbsthd2459.datingapp.message.MsgModel
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.LocalDateTimeUtils.Companion.toLocalDateTime
 import com.dbsthd2459.datingapp.utils.MyInfo

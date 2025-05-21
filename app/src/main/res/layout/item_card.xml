@@ -43,7 +43,7 @@
                 android:text="Age"
                 android:textSize="25sp"
                 android:textColor="@color/black"
-                android:layout_marginLeft="15dp"
+                android:layout_marginLeft="8dp"
                 android:fontFamily="@font/nanumsquare_acebold"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

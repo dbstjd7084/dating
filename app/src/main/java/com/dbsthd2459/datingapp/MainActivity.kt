@@ -20,24 +20,30 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.dbsthd2459.datingapp.auth.UserDataModel
 import com.dbsthd2459.datingapp.message.MyLikeListActivity
 import com.dbsthd2459.datingapp.mypage.MyPageActivity
 import com.dbsthd2459.datingapp.slider.CardStackAdapter
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
+import com.dbsthd2459.datingapp.utils.FirebasePushUtils.Companion.sendPush
 import com.dbsthd2459.datingapp.utils.FirebaseRef
 import com.dbsthd2459.datingapp.utils.FirebaseRef.Companion.userInfoRef
 import com.dbsthd2459.datingapp.utils.MyInfo
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.messaging.FirebaseMessaging
 import com.yuyakaido.android.cardstackview.CardStackLayoutManager
 import com.yuyakaido.android.cardstackview.CardStackListener
 import com.yuyakaido.android.cardstackview.CardStackView
 import com.yuyakaido.android.cardstackview.Direction
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class MainActivity : AppCompatActivity() {
     lateinit var cardStackAdapter : CardStackAdapter
@@ -186,7 +192,7 @@ class MainActivity : AppCompatActivity() {
                 Log.w(TAG, "loadPost:onCancelleed", databaseError.toException())
             }
         }
-        FirebaseRef.userInfoRef.child(uid).addValueEventListener(postListener)
+        userInfoRef.child(uid).addValueEventListener(postListener)
     }
 
     private fun getUserDataList(currentUserGender : String) {
@@ -209,12 +215,13 @@ class MainActivity : AppCompatActivity() {
                 Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
             }
         }
-        FirebaseRef.userInfoRef.addValueEventListener(postListener)
+        userInfoRef.addValueEventListener(postListener)
     }
 
     private fun userLikeOtherUser(myUid: String, otherUid: String) {
 
         FirebaseRef.userLikeRef.child(myUid).child(otherUid).setValue("true")
+        FirebaseRef.userBeLikedRef.child(otherUid).child(myUid).setValue("true")
 
         getOtherUserLikeList(otherUid)
 
@@ -223,37 +230,54 @@ class MainActivity : AppCompatActivity() {
     private fun userDislikeOtherUser(myUid: String, otherUid: String) {
 
         FirebaseRef.userLikeRef.child(myUid).child(otherUid).removeValue()
+        FirebaseRef.userBeLikedRef.child(otherUid).child(myUid).removeValue()
 
     }
 
     // 내가 좋아요 한 사람의 좋아요 리스트 확인
     private fun getOtherUserLikeList(otherUid: String) {
-
-        val postListener = object : ValueEventListener {
-            @SuppressLint("NotifyDataSetChanged")
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-
-                for (dataModel in dataSnapshot.children) {
-
-                    val likeUserKey = dataModel.key.toString()
-                    if (likeUserKey == uid) {
-                        Toast.makeText(this@MainActivity, "상대방이 나를 좋아요한 상대입니다!", Toast.LENGTH_SHORT).show()
-                        createNotificationChannel()
-                        sendMatchNotification()
-                    }
-
-                }
-
+        lifecycleScope.launch {
+            // 매칭되었는지 확인 후 알림
+            val matchSnapshot = FirebaseRef.userLikeRef.child(otherUid).child(uid).get().await()
+            if (matchSnapshot.exists()) {
+                Toast.makeText(this@MainActivity, "상대방도 나를 좋아하고 있어요!", Toast.LENGTH_SHORT).show()
+                createNotificationChannel()
+                sendMatchNotification()
             }
 
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
+            // 상대방에게 푸시 알림 보내기
+            val todayPushed = checkIfTodayPushed(otherUid)
+            if (todayPushed) {
+                Toast.makeText(this@MainActivity, "이미 푸시 알림을 보냈습니다.", Toast.LENGTH_SHORT).show()
+                return@launch
             }
+
+            // 푸시 알림 전송 및 날짜 기록
+            FirebaseRef.userPushRef.child(uid).child(otherUid).setValue(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt())
+
+            // 상대방 데이터 가져오기
+            val userDataSnapshot = FirebaseRef.userInfoRef.child(otherUid).get().await()
+            val data = userDataSnapshot.getValue(UserDataModel::class.java)
+
+            // 토큰이 없는 로그아웃 상태 시 중단
+            if (data!!.token == "") {
+                return@launch
+            }
+
+            sendPush(uid, "${MyInfo.myNickname} 님이 당신을 좋아해요", data.token.toString(), resources.openRawResource(R.raw.service_account))
         }
-        FirebaseRef.userLikeRef.child(otherUid).addValueEventListener(postListener)
-
     }
+
+    // 푸시 알림을 이미 보냈는지 확인하는 suspend 함수
+    private suspend fun checkIfTodayPushed(otherUid: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            val todayDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInt()
+            val lastPushDateSnapshot = FirebaseRef.userPushRef.child(uid).child(otherUid).get().await()
+            val lastPushDate = lastPushDateSnapshot.getValue(Int::class.java) ?: 0
+            todayDate <= lastPushDate
+        }
+    }
+
 
     // Notification
 

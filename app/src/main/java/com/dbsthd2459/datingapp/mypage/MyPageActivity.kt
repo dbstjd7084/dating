@@ -68,6 +68,7 @@ class MyPageActivity : AppCompatActivity() {
 
         getMyData()
 
+        // 로그아웃 버튼 이벤트
         val logoutBtn = findViewById<Button>(R.id.logoutBtn)
         logoutBtn.setOnClickListener {
 
@@ -77,6 +78,8 @@ class MyPageActivity : AppCompatActivity() {
             val intent = Intent(this, IntroActivity::class.java)
             startActivity(intent)
             finish()
+
+            FirebaseRef.userInfoRef.child(uid).child("token").setValue("")
         }
 
         // 네비게이션 바 클릭 시 이벤트 설정

@@ -1,7 +1,9 @@
 package com.dbsthd2459.datingapp.utils
 
 import android.util.Log
+import com.dbsthd2459.datingapp.utils.FirebaseRef.Companion.userBeLikedRef
 import com.dbsthd2459.datingapp.utils.FirebaseRef.Companion.userInfoRef
+import com.dbsthd2459.datingapp.utils.FirebaseRef.Companion.userLikeRef
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -11,6 +13,8 @@ import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.InputStream
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class FirebaseAuthUtils {
 
@@ -22,10 +26,26 @@ class FirebaseAuthUtils {
 
         }
 
-        fun getEmail(): String? {
+        fun getEmail(): String {
 
             return FirebaseAuth.getInstance().currentUser?.email.toString()
 
+        }
+
+        fun getEmail(targetUid: String, callback: (String) -> Unit) {
+
+            val postListener = object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val email = dataSnapshot.value.toString()
+                    // 콜백을 통해 email 전달
+                    callback(email)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.w("FirebaseAuthUtils", "loadPost:onCancelled", databaseError.toException())
+                }
+            }
+            userInfoRef.child(targetUid).child("email").addListenerForSingleValueEvent(postListener)
         }
 
         fun getNickname(targetUid: String, callback: (String) -> Unit) {
@@ -41,6 +61,42 @@ class FirebaseAuthUtils {
                 }
             }
             userInfoRef.child(targetUid).child("nickname").addListenerForSingleValueEvent(postListener)
+        }
+
+        // 팔로잉 수 가져오기
+        suspend fun getFollowingCount(): Long {
+            return suspendCoroutine { continuation ->
+                val postListener = object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        val count = dataSnapshot.childrenCount
+                        continuation.resume(count)
+                    }
+
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        Log.w("FirebaseAuthUtils", "loadPost:onCancelled", databaseError.toException())
+                        continuation.resume(0)
+                    }
+                }
+                userLikeRef.child(getUid()).addListenerForSingleValueEvent(postListener)
+            }
+        }
+
+        // 팔로워 수 가져오기
+        suspend fun getFollowerCount(): Long {
+            return suspendCoroutine { continuation ->
+                val postListener = object : ValueEventListener {
+                    override fun onDataChange(dataSnapshot: DataSnapshot) {
+                        val count = dataSnapshot.childrenCount
+                        continuation.resume(count)
+                    }
+
+                    override fun onCancelled(databaseError: DatabaseError) {
+                        Log.w("FirebaseAuthUtils", "loadPost:onCancelled", databaseError.toException())
+                        continuation.resume(0)
+                    }
+                }
+                userBeLikedRef.child(getUid()).addListenerForSingleValueEvent(postListener)
+            }
         }
 
         fun refreshToken() {

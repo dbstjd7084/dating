@@ -6,24 +6,29 @@
     android:layout_height="match_parent"
     tools:context=".message.MyLikeListActivity">
 
-    <ListView
-        android:id="@+id/userListView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+    <!-- 유저  -->
 
-    <TextView
-        android:id="@+id/emptyView"
-        android:layout_width="wrap_content"
+    <!-- 상단 탭 레이아웃 -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textSize="27sp"
-        android:text="매칭에서 좋아요한 상대가 없어요.."
-        android:fontFamily="@font/nanumsquare_acbold"
-        android:layout_margin="20dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:tabGravity="fill"
+        app:tabIndicatorColor="@color/mainColor"
+        app:tabMode="fixed" />
+
+    <!-- ViewPager2: Tab 클릭 시 변경될 화면 -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tabLayout" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
@@ -31,12 +36,12 @@
         android:layout_height="81dp"
         android:layout_alignParentBottom="true"
         android:background="@drawable/nav_bg"
-        app:menu="@menu/bottom_navigation_menu"
-        app:labelVisibilityMode="unlabeled"
         app:itemIconSize="40dp"
         app:itemIconTint="@color/bottom_nav_color"
-        app:layout_constraintStart_toStartOf="parent"
+        app:labelVisibilityMode="unlabeled"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:menu="@menu/bottom_navigation_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

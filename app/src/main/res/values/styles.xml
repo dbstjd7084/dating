@@ -1,4 +1,5 @@
 <resources>
+    <!-- 회원가입 입력창 스타일 -->
     <style name="TextInputStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
         <item name="boxStrokeColor">#A6FF9999</item> <!-- 활성화 상태 테두리 색 -->
         <item name="boxBackgroundColor">#40FF9999</item> <!-- 배경 색 -->
@@ -6,6 +7,8 @@
         <item name="android:textColorHint">#80000000</item> <!-- 힌트 글씨 색 -->
         <item name="colorPrimary">@color/mainColor</item> <!-- 주요 색 -->
     </style>
+
+    <!-- 내 프로필 소개말 작성창 스타일 -->
     <style name="TextInputStyleFromIntroducing" parent="Widget.MaterialComponents.TextInputLayout.FilledBox">
         <item name="boxStrokeColor">@color/dark_gray</item> <!-- 활성화 상태 테두리 색 -->
         <item name="colorControlNormal">@color/dark_gray</item> <!-- 비활성화 상태 테두리 색 -->
@@ -14,6 +17,7 @@
         <item name="android:textColorHint">@color/editBackground</item> <!-- 힌트 글씨 색 -->
         <item name="colorPrimary">#3F51B5</item> <!-- 주요 색 -->
     </style>
+
     <style name="TextInputCounterStyleFromIntroducing">
         <item name="android:textAlignment">center</item> <!-- 가운데 정렬 -->
         <item name="android:layout_gravity">center_horizontal</item> <!-- 가로 가운데 정렬 -->

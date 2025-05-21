@@ -1,81 +1,31 @@
 package com.dbsthd2459.datingapp.message
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListView
-import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.viewpager2.widget.ViewPager2
 import com.dbsthd2459.datingapp.MainActivity
 import com.dbsthd2459.datingapp.R
-import com.dbsthd2459.datingapp.auth.UserDataModel
+import com.dbsthd2459.datingapp.message.adapters.MatchViewPagerAdapter
+import com.dbsthd2459.datingapp.message.tabs.BeLikedFragment
+import com.dbsthd2459.datingapp.message.tabs.LikeFragment
 import com.dbsthd2459.datingapp.mypage.MyPageActivity
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
-import com.dbsthd2459.datingapp.utils.FirebasePushUtils.Companion.sendPush
-import com.dbsthd2459.datingapp.utils.FirebaseRef
-import com.dbsthd2459.datingapp.utils.LocalDateTimeUtils.Companion.toTimestamp
-import com.dbsthd2459.datingapp.utils.MyInfo
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
-class MyLikeListActivity : AppCompatActivity() {
+class MyLikeListActivity : AppCompatActivity(), LikeFragment.FollowingCountListener, BeLikedFragment.FollowerCountListener {
 
-    private val TAG = "MyLikeListActivity"
-    private val uid = FirebaseAuthUtils.getUid()
-
-    private val likeUserListUid = mutableListOf<String>()
-    private val likeUserList = mutableListOf<UserDataModel>()
-
-    lateinit var listviewAdapter : ListViewAdapter
-    lateinit var getterUid: String
-    lateinit var getterToken: String
+    lateinit var tabLayout: TabLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_my_like_list)
-
-        val userListView = findViewById<ListView>(R.id.userListView)
-        val emptyView = findViewById<TextView>(R.id.emptyView)
-
-        listviewAdapter = ListViewAdapter(this, likeUserList)
-        userListView.emptyView = emptyView
-        userListView.adapter = listviewAdapter
-
-        getMyLikeList()
-
-        userListView.setOnItemClickListener { parent, view, position, id ->
-
-            getterUid = likeUserList[position].uid.toString()
-            getterToken = likeUserList[position].token.toString()
-            checkMatching(getterUid)
-
-        }
-
-        userListView.setOnItemLongClickListener { parent, view, position, id ->
-
-            Toast.makeText(this@MyLikeListActivity, "상대방에게 관심을 표했어요", Toast.LENGTH_LONG).show()
-
-            lifecycleScope.launch {
-
-
-                sendPush("알림 메세지", MyInfo.myNickname + " 님께서 푸시 알림을 보냈습니다!", likeUserList[position].token.toString(), resources.openRawResource(R.raw.service_account))
-
-            }
-
-            return@setOnItemLongClickListener(true)
-        }
 
         // 네비게이션 바 클릭 시 이벤트 설정
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigation)
@@ -103,90 +53,47 @@ class MyLikeListActivity : AppCompatActivity() {
             }
         }
 
-    }
+        tabLayout = findViewById(R.id.tabLayout)
+        val viewPager = findViewById<ViewPager2>(R.id.viewPager)
 
-    private fun checkMatching(otherUid: String) {
-        val postListener = object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
+        // ViewPager2 어댑터 설정
+        val adapter = MatchViewPagerAdapter(this)
+        viewPager.adapter = adapter
 
-                if (dataSnapshot.children.count() == 0) {
-                    Toast.makeText(this@MyLikeListActivity, "상대방이 관심을 표한 사람이 존재하지 않네요.", Toast.LENGTH_LONG).show()
-                } else {
-
-                    var moved = false
-                    for (dataModel in dataSnapshot.children) {
-
-                        val likeUserKey = dataModel.key.toString()
-                        if (likeUserKey.equals(uid)) {
-
-                            val intent = Intent(this@MyLikeListActivity, ChatActivity::class.java)
-                            intent.putExtra("target", otherUid)
-                            startActivity(intent)
-                            moved = true
-                        }
-
-                    }
-
-                    if (!moved) {
-                        Toast.makeText(this@MyLikeListActivity, "매칭이 되지 않아 채팅을 할 수 없습니다. 길게 눌러 푸시 알림을 보내보세요!", Toast.LENGTH_LONG).show()
-                    }
-
-                }
+        // TabLayout과 ViewPager2 연결
+        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+            when (position) {
+                0 -> tab.text = "채팅"
+                1 -> tab.text = ""
+                2 -> tab.text = ""
             }
+        }.attach()
 
-            override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
-            }
-        }
-        FirebaseRef.userLikeRef.child(otherUid).addValueEventListener(postListener)
+        // Firebase에서 가져온 데이터로 탭 업데이트
+        updateTabCounts()
 
     }
 
-    private fun getMyLikeList() {
+    private fun updateTabCounts() {
+        lifecycleScope.launch {
+            val followingCount = async { FirebaseAuthUtils.getFollowingCount() }
+            val followerCount = async { FirebaseAuthUtils.getFollowerCount() }
 
-        val postListener = object : ValueEventListener {
-            @SuppressLint("NotifyDataSetChanged")
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-
-                for (dataModel in dataSnapshot.children) {
-                    likeUserListUid.add(dataModel.key.toString())
-                }
-                getUserDataList()
-
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
-            }
+            tabLayout.getTabAt(1)?.text = "${followerCount.await()} 팔로워"
+            tabLayout.getTabAt(2)?.text = "${followingCount.await()} 팔로잉"
         }
-        FirebaseRef.userLikeRef.child(uid).addValueEventListener(postListener)
-
     }
 
-    private fun getUserDataList() {
-        val postListener = object : ValueEventListener {
-            @SuppressLint("NotifyDataSetChanged")
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-
-                for (dataModel in dataSnapshot.children) {
-
-                    val user = dataModel.getValue(UserDataModel::class.java)
-                    
-                    if (likeUserListUid.contains(user?.uid.toString())) {
-                        likeUserList.add(user!!)
-                    }
-
-                }
-                listviewAdapter.notifyDataSetChanged()
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Getting Post failed, log a message
-                Log.w(TAG, "loadPost:onCancelled", databaseError.toException())
-            }
+    override fun onFollowerCountChanged(count: Int) {
+        runOnUiThread {
+            tabLayout.getTabAt(1)?.text = "$count 팔로워"
         }
-        FirebaseRef.userInfoRef.addValueEventListener(postListener)
+    }
+
+    override fun onFollowingCountChanged(count: Int) {
+        runOnUiThread {
+            tabLayout.getTabAt(2)?.text = "$count 팔로잉"
+        }
     }
 
 }

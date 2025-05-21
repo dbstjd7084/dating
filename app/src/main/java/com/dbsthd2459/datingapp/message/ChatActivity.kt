@@ -15,18 +15,16 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.dbsthd2459.datingapp.R
+import com.dbsthd2459.datingapp.message.adapters.MsgAdapter
 import com.dbsthd2459.datingapp.utils.FirebaseAuthUtils
 import com.dbsthd2459.datingapp.utils.FirebasePushUtils.Companion.sendPush
 import com.dbsthd2459.datingapp.utils.FirebaseRef
 import com.dbsthd2459.datingapp.utils.LocalDateTimeUtils.Companion.toTimestamp
-import com.dbsthd2459.datingapp.utils.MyInfo
 import com.google.android.gms.tasks.Tasks
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 class ChatActivity : AppCompatActivity() {
-
-    private val TAG = "ChatActivity"
 
     lateinit var recyclerAdapter: MsgAdapter
     var msgList = mutableListOf<MsgModel>()
@@ -90,7 +88,7 @@ class ChatActivity : AppCompatActivity() {
 
                 lifecycleScope.launch {
 
-                    sendPush(MyInfo.myNickname, msgText, token, resources.openRawResource(R.raw.service_account))
+                    sendPush(FirebaseAuthUtils.getUid(), msgText, token, resources.openRawResource(R.raw.service_account))
 
                 }
 

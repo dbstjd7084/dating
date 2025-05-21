@@ -3,4 +3,6 @@
     <string name="nav_chat">채팅 화면</string>
     <string name="nav_matching">매칭 화면</string>
     <string name="nav_profile">내 프로필</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
